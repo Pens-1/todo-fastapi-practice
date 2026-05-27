@@ -45,15 +45,29 @@ TODO 1 件が持つ項目は次の 4 つです。
 
 仮想環境を作り、依存パッケージをインストールします。
 
-### A. venv + pip
+### A. venv + pip（Windows PowerShell）
 
-```bash
-python -m venv .venv             # 仮想環境を作る
-source .venv/bin/activate        # 有効化（Windows: .venv\Scripts\activate）
-pip install -r requirements.txt  # アプリ実行に必要な依存
+```powershell
+python -m venv .venv               # 仮想環境を作る
+.\.venv\Scripts\Activate.ps1       # 有効化（PowerShell）
+pip install -r requirements.txt    # アプリ実行に必要な依存
 # テストも動かすなら、開発依存も入れる:
 pip install -r requirements-dev.txt
 ```
+
+> **`Activate.ps1` が「このシステムではスクリプトの実行が無効…」と怒られたら**
+> PowerShell のスクリプト実行ポリシー（セキュリティ機能）でブロックされています。
+> 次のどちらかで許可してください。
+>
+> ```powershell
+> # 推奨: 現在のユーザーだけ、署名付き/ローカルスクリプトを許可（恒久）
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+>
+> # または: この PowerShell ウィンドウの間だけ許可（一時的）
+> Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+> ```
+>
+> 許可したら、もう一度 `.\.venv\Scripts\Activate.ps1` を実行します。
 
 > `requirements.txt` はアプリ実行用、`requirements-dev.txt` は pytest など開発用です
 > （後者は前者を内包します）。`fastapi[standard]` に開発サーバ `uvicorn` が含まれます。
