@@ -1,0 +1,25 @@
+[project]
+name = "todo-fastapi-practice"
+version = "0.1.0"
+description = "FastAPI + SQLModel の練習教材（TODO CRUD API）"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.136.3",
+    "sqlmodel>=0.0.38",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.0.3",
+]
+
+[tool.pytest.ini_options]
+# プロジェクト直下を import パスに加え、"app" パッケージを読めるようにする。
+pythonpath = ["."]
+# この環境にはシステム側 (ROS 等) の無関係な pytest プラグインが入っており、
+# 放置すると import エラーで pytest 自体が起動しない。明示的に無効化する。
+# （普通の環境ではこの行は不要。ここの環境固有の対策）
+addopts = "-p no:launch_testing -p no:launch_ros -p no:ament_pep257 -p no:ament_lint -p no:ament_copyright -p no:ament_flake8 -p no:ament_xmllint"
+testpaths = ["tests"]
