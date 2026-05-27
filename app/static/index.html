@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TODO 練習アプリ（お手本フロント）</title>
+  <style>
+    /* ----- 見た目（CSS）。装飾なので深く理解しなくてよい ----- */
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 16px;
+      color: #222;
+    }
+    h1 { font-size: 1.4rem; }
+    form { display: flex; gap: 8px; margin-bottom: 24px; }
+    input[type="text"] { flex: 1; padding: 8px; font-size: 1rem; }
+    button { padding: 8px 12px; font-size: 1rem; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    li .title { flex: 1; }
+    /* done が true の項目はグレーの取り消し線にする */
+    li.done .title { text-decoration: line-through; color: #999; }
+    .delete-btn { background: #fdd; border: 1px solid #f99; }
+    .empty { color: #888; }
+  </style>
+</head>
+<body>
+  <h1>TODO 練習アプリ</h1>
+  <p>これは <code>app/static/index.html</code> にある「お手本フロント」。素の HTML + CSS + JS だけで、フレームワークも CDN も使っていない。</p>
+
+  <!-- 新規 TODO 作成フォーム -->
+  <form id="create-form">
+    <input type="text" id="title-input" placeholder="やることを入力" required />
+    <button type="submit">追加</button>
+  </form>
+
+  <!-- 一覧をここに描画する -->
+  <ul id="todo-list"></ul>
+
+  <script>
+    // ===== ここから JavaScript（アプリの動き） =====
+    //
+    // 同じサーバ（同一オリジン）から配信されるので、API の URL は
+    // 相対パス "/todos" でよい（CORS の設定は不要）。
+
+    const listEl = document.getElementById("todo-list");
+    const formEl = document.getElementById("create-form");
+    const inputEl = document.getElementById("title-input");
+
+    // 一覧を取得して画面に描き直す。
+    // 「操作 → 再取得 → 再描画」の流れを毎回ここに集約している。
+    async function loadTodos() {
+      // GET /todos で全件取得
+      const res = await fetch("/todos");
+      const todos = await res.json();
+
+      // いったん中身を空にしてから作り直す
+      listEl.innerHTML = "";
+
+      if (todos.length === 0) {
+        const li = document.createElement("li");
+        li.className = "empty";
+        li.textContent = "まだ TODO がありません";
+        listEl.appendChild(li);
+        return;
+      }
+
+      // 1 件ずつ <li> を組み立てて並べる
+      for (const todo of todos) {
+        const li = document.createElement("li");
+        if (todo.done) li.classList.add("done");
+
+        // 完了チェックボックス（変更したら PATCH で done をトグル）
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = todo.done;
+        checkbox.addEventListener("change", () => toggleDone(todo));
+
+        // タイトル表示
+        const titleSpan = document.createElement("span");
+        titleSpan.className = "title";
+        titleSpan.textContent = todo.title;
+
+        // 削除ボタン（押したら DELETE）
+        const delBtn = document.createElement("button");
+        delBtn.className = "delete-btn";
+        delBtn.textContent = "削除";
+        delBtn.addEventListener("click", () => deleteTodo(todo.id));
+
+        li.appendChild(checkbox);
+        li.appendChild(titleSpan);
+        li.appendChild(delBtn);
+        listEl.appendChild(li);
+      }
+    }
+
+    // フォーム送信 = 新規作成（POST /todos）
+    formEl.addEventListener("submit", async (event) => {
+      event.preventDefault(); // ページ遷移を止める
+      const title = inputEl.value.trim();
+      if (!title) return;
+
+      await fetch("/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }), // done は省略 → サーバ側で false
+      });
+
+      inputEl.value = "";  // 入力欄を空に戻す
+      await loadTodos();   // 一覧を再取得して再描画
+    });
+
+    // 完了/未完了の切り替え（PATCH /todos/{id}）
+    async function toggleDone(todo) {
+      await fetch(`/todos/${todo.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ done: !todo.done }), // done だけ送る
+      });
+      await loadTodos();
+    }
+
+    // 削除（DELETE /todos/{id}）
+    async function deleteTodo(id) {
+      await fetch(`/todos/${id}`, { method: "DELETE" });
+      await loadTodos();
+    }
+
+    // ページを開いた最初の 1 回、一覧を読み込む
+    loadTodos();
+  </script>
+</body>
+</html>

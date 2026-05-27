@@ -56,11 +56,20 @@ uv run uvicorn app.main:app --reload
 起動したらブラウザで以下を開いてください。
 
 ```
-http://127.0.0.1:8000/docs
+http://127.0.0.1:8000/         お手本フロント（TODO アプリの画面）
+http://127.0.0.1:8000/docs     Swagger UI（各 API を画面から試せる）
 ```
 
-**Swagger UI** が表示され、各エンドポイントを画面上からそのまま試せます。
+- `/` を開くと、素の HTML/CSS/JS だけで作った**お手本フロント**が表示されます。
+  実体は `app/static/index.html` にあり、`fetch` で `/todos` API を叩いて
+  作成・一覧・完了トグル・削除を行います（依存ライブラリ・CDN なし）。
+- `/docs` には **Swagger UI** が表示され、各エンドポイントを画面上からそのまま試せます。
+
 （初回起動時、データベース `todo.db` が無ければ自動的に作られます。）
+
+> **メモ:** このフロントはあくまで「お手本」です。`assignee` 入力欄の追加など
+> フロント側の機能拡張は、`EXERCISES.md` のバックエンド課題を解き終えてから
+> 自分で挑戦してみてください。
 
 ## 動作確認（curl 例）
 
@@ -118,10 +127,16 @@ uv run pytest
 todo-fastapi-practice/
 ├── app/                # お手本コード（まずここを読む）
 │   ├── __init__.py
-│   ├── main.py         # FastAPI 本体・エンドポイント定義
+│   ├── main.py         # FastAPI 本体の組み立て（lifespan・/ でフロント配信・ルーター登録）
 │   ├── database.py     # DB 接続・セッション・テーブル作成
 │   ├── models.py       # DB テーブルの形（Todo モデル）
-│   └── schemas.py      # API 入出力の形（スキーマ）
+│   ├── schemas.py      # API 入出力の形（スキーマ）
+│   ├── crud.py         # DB 操作そのもの（読み書き関数を集約）
+│   ├── routers/        # エンドポイント（HTTP の入口）
+│   │   ├── __init__.py
+│   │   └── todos.py    # /todos 系のルーター（薄い層・404 判定はここ）
+│   └── static/
+│       └── index.html  # お手本フロント（素の HTML/CSS/JS）
 ├── tests/              # pytest のテスト
 │   └── test_todos.py
 ├── EXERCISES.md        # 自分で解く課題集
@@ -134,9 +149,12 @@ todo-fastapi-practice/
 上から順に進めるのがおすすめです。
 
 1. **`app/` のコードを読む**
-   `models.py` → `schemas.py` → `database.py` → `main.py` の順に読むと、
-   「テーブルの形 → 入出力の形 → DB 接続 → エンドポイント」と理解しやすいです。
-   各ファイルには日本語のコメントが付いています。
+   `models.py` → `schemas.py` → `database.py` → `crud.py` → `routers/todos.py` → `main.py`
+   の順に読むと、「テーブルの形 → 入出力の形 → DB 接続 → DB 操作 → HTTP の入口 → 組み立て」
+   と理解しやすいです。各ファイルには日本語のコメントが付いています。
+   - `crud.py` … DB の読み書きそのもの（HTTPException は投げない）
+   - `routers/todos.py` … URL・ステータスコード・404 判定など HTTP の入口（crud を呼ぶ薄い層）
+   - `main.py` … 上記を組み立てるだけ（`include_router` でルーターを登録）
 
 2. **`tests/` を読む**
    テストを読むと「この API はどう呼ばれ、何を返すのが正しいのか」が具体的に分かります。
@@ -145,4 +163,5 @@ todo-fastapi-practice/
 3. **`EXERCISES.md` の課題を順に解く**
    お手本を真似しながら、自分で機能を足していきます。
    最初の課題は「**誰のタスクか（`assignee`）を DB に追加する**」です。
-   `models.py` / `schemas.py` / `main.py` のどこをどう直せばいいか、お手本を手がかりに考えてみてください。
+   `models.py` / `schemas.py` / `crud.py` / `routers/todos.py` のどこをどう直せばいいか、
+   お手本を手がかりに考えてみてください。
