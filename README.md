@@ -110,33 +110,40 @@ http://127.0.0.1:8000/docs     Swagger UI（各 API を画面から試せる）
 
 ## 動作確認（curl 例）
 
-別のターミナルを開き、サーバを起動したまま以下を順に試してください。
+別の PowerShell を開き、サーバを起動したまま以下を順に試してください。
+
+> **重要（PowerShell の落とし穴）:**
+> PowerShell の `curl` は本物の curl ではなく `Invoke-WebRequest` の別名なので、
+> `-X` / `-H` / `-d` はエラーになります。**必ず `curl.exe` と書いて**本物の curl
+> （Windows 10/11 に同梱）を呼んでください。
+> また、行を続けるときの記号は bash の `\` ではなく **バッククォート `` ` ``** です。
+> 面倒なら、各コマンドを改行せず **1 行で**打っても構いません。
 
 ### 1. 作成（POST）
 
-```bash
-curl -X POST http://127.0.0.1:8000/todos \
-  -H "Content-Type: application/json" \
+```powershell
+curl.exe -X POST http://127.0.0.1:8000/todos `
+  -H "Content-Type: application/json" `
   -d '{"title": "牛乳を買う"}'
 ```
 
 ### 2. 一覧取得（GET）
 
-```bash
-curl http://127.0.0.1:8000/todos
+```powershell
+curl.exe http://127.0.0.1:8000/todos
 ```
 
 ### 3. 1 件取得（GET）
 
-```bash
-curl http://127.0.0.1:8000/todos/1
+```powershell
+curl.exe http://127.0.0.1:8000/todos/1
 ```
 
 ### 4. 更新（PATCH） — 完了にする
 
-```bash
-curl -X PATCH http://127.0.0.1:8000/todos/1 \
-  -H "Content-Type: application/json" \
+```powershell
+curl.exe -X PATCH http://127.0.0.1:8000/todos/1 `
+  -H "Content-Type: application/json" `
   -d '{"done": true}'
 ```
 
@@ -144,8 +151,8 @@ curl -X PATCH http://127.0.0.1:8000/todos/1 \
 
 ### 5. 削除（DELETE）
 
-```bash
-curl -X DELETE http://127.0.0.1:8000/todos/1
+```powershell
+curl.exe -X DELETE http://127.0.0.1:8000/todos/1
 ```
 
 削除に成功すると、本文なしの `204 No Content` が返ります。
