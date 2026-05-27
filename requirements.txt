@@ -1,0 +1,6 @@
+# 本番（アプリ実行）に必要な依存
+# uv を使わず、標準の venv + pip で入れる場合はこのファイルを使う:
+#   pip install -r requirements.txt
+# fastapi[standard] には uvicorn（開発サーバ）も含まれる
+fastapi[standard]>=0.136.3
+sqlmodel>=0.0.38

@@ -33,13 +33,32 @@ TODO 1 件が持つ項目は次の 4 つです。
 ## 必要環境
 
 - Python 3.12
-- [uv](https://docs.astral.sh/uv/)（パッケージ・仮想環境の管理ツール）
 
-uv が未インストールの場合は、公式手順に従って入れてください。
+仮想環境と依存の管理には、次の **A / B どちらか** を使えます。
+
+- **A. 標準の `venv` + `pip`**（追加ツール不要。`uv` が入っていない人はこちら）
+- **B. [uv](https://docs.astral.sh/uv/)**（速い。入っている人はこちら）
+
+以降の手順は A / B を併記します。**どちらか一方**を選んでください。
 
 ## セットアップ
 
-依存パッケージのインストールと仮想環境の作成を、まとめて行います。
+仮想環境を作り、依存パッケージをインストールします。
+
+### A. venv + pip
+
+```bash
+python -m venv .venv             # 仮想環境を作る
+source .venv/bin/activate        # 有効化（Windows: .venv\Scripts\activate）
+pip install -r requirements.txt  # アプリ実行に必要な依存
+# テストも動かすなら、開発依存も入れる:
+pip install -r requirements-dev.txt
+```
+
+> `requirements.txt` はアプリ実行用、`requirements-dev.txt` は pytest など開発用です
+> （後者は前者を内包します）。`fastapi[standard]` に開発サーバ `uvicorn` が含まれます。
+
+### B. uv
 
 ```bash
 uv sync
@@ -50,6 +69,10 @@ uv sync
 開発用サーバ（`--reload` でコード変更時に自動再起動）を起動します。
 
 ```bash
+# A. venv + pip（仮想環境を有効化した状態で）
+uvicorn app.main:app --reload
+
+# B. uv
 uv run uvicorn app.main:app --reload
 ```
 
@@ -118,6 +141,10 @@ curl -X DELETE http://127.0.0.1:8000/todos/1
 pytest でテストを実行します。
 
 ```bash
+# A. venv + pip（仮想環境を有効化した状態で）
+pytest
+
+# B. uv
 uv run pytest
 ```
 
@@ -140,7 +167,9 @@ todo-fastapi-practice/
 ├── tests/              # pytest のテスト
 │   └── test_todos.py
 ├── EXERCISES.md        # 自分で解く課題集
-├── pyproject.toml      # 依存・設定
+├── requirements.txt    # 依存（venv + pip 用・アプリ実行）
+├── requirements-dev.txt# 依存（venv + pip 用・テスト含む開発）
+├── pyproject.toml      # 依存・設定（uv 用）
 └── README.md           # このファイル
 ```
 
@@ -158,7 +187,7 @@ todo-fastapi-practice/
 
 2. **`tests/` を読む**
    テストを読むと「この API はどう呼ばれ、何を返すのが正しいのか」が具体的に分かります。
-   `uv run pytest` で実際に動かして、全部通ることを確認しましょう。
+   `pytest`（uv なら `uv run pytest`）で実際に動かして、全部通ることを確認しましょう。
 
 3. **`EXERCISES.md` の課題を順に解く**
    お手本を真似しながら、自分で機能を足していきます。
